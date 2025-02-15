@@ -2,32 +2,9 @@ import React from "react";
 import FilterInput from "@/components/FilterInput/FilterInput";
 import SourceList from "@/components/SourceList/SourceList";
 import Select from "@/components/Select/Select";
-import { Filters } from "@/types/types";
+import { FilterPanelProps } from "@/types/types";
 import { useUserPreferences } from "@/hooks/useUserPreferences"; // Import the custom hook
-
-const CategoryList = [
-  { value: "", label: "Select an option" },
-  { value: "Business", label: "Business" },
-  { value: "Technology", label: "Technology" },
-  { value: "General", label: "General" },
-  { value: "Health", label: "Health" },
-  { value: "Science", label: "Science" },
-  { value: "Sports", label: "Sports" },
-  { value: "Entertainment", label: "Entertainment" },
-];
-
-interface FilterPanelProps {
-  filters: Filters;
-  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
-  sources: string[];
-  selectedSources: string[];
-  onSourceChange: (
-    e: React.ChangeEvent<HTMLInputElement>,
-    value: string
-  ) => void;
-  searchQuery: string; // Add searchQuery as a prop
-  setSearchQuery: React.Dispatch<React.SetStateAction<string>>; // Add setSearchQuery as a prop
-}
+import { CategoryList } from "./CategoryList";
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
   filters,
@@ -40,10 +17,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 }) => {
   const [preferences, updatePreferences] = useUserPreferences();
 
-  console.log(filters , preferences)
+  console.log(filters, preferences);
   const handleSavePreferences = () => {
     updatePreferences({
-      searchQuery :searchQuery,
+      searchQuery: searchQuery,
       categories: filters.category ? [filters.category] : [],
       sources: selectedSources,
     });

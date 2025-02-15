@@ -67,3 +67,16 @@
   | "blue"
   | "purple"
   | "gray";
+
+  export interface FilterPanelProps {
+    filters: Filters;
+    setFilters: React.Dispatch<React.SetStateAction<Filters>>;
+    sources: string[];
+    selectedSources: string[];
+    onSourceChange: (
+      e: React.ChangeEvent<HTMLInputElement>,
+      value: string
+    ) => void;
+    searchQuery: string; // Add searchQuery as a prop
+    setSearchQuery: React.Dispatch<React.SetStateAction<string>>; // Add setSearchQuery as a prop
+  }
