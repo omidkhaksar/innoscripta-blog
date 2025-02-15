@@ -1,101 +1,95 @@
-import Image from "next/image";
+"use client";
+import React, { useState, useEffect } from "react";
+import NewsList from "@/components/NewsList";
+import FilterPanel from "@/components/FilterPanel/FilterPanel";
+import { fetchArticles } from "@/api/fetchArticles";
+import { Article, Filters } from "@/types/types";
+import { debounce } from "lodash";
+import { useUserPreferences } from "@/hooks/useUserPreferences"; // Import the custom hook for preferences
 
-export default function Home() {
+const Home: React.FC = () => {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("apple"); // Default value set to 'apple'
+  const [filters, setFilters] = useState<Filters>({
+    category: "",
+    from: "",
+    to: "",
+  });
+  const [sources] = useState<string[]>(["nyt", "newsAPI", "theNews"]);
+  const [selectedSources, setSelectedSources] = useState<string[]>([
+    "nyt",
+    "newsAPI",
+  ]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // Use custom hook to manage user preferences
+  const [preferences] = useUserPreferences();
+
+  // Sync preferences with state on mount
+  useEffect(() => {
+    if (preferences.categories.length > 0) {
+      setFilters((prev) => ({
+        ...prev,
+        category: preferences.categories[0], // Use the saved category
+      }));
+    }
+    if (preferences.sources.length > 0) {
+      setSelectedSources(preferences.sources); // Use saved sources
+    }
+    if (preferences.searchQuery) {
+      setSearchQuery(preferences.searchQuery); // Use saved search query
+    }
+  }, [preferences]);
+
+  const debouncedSearchQuery = debounce(async (query: string) => {
+    setLoading(true);
+    const filterParams = {
+      category: filters.category,
+      from: filters.from,
+      to: filters.to,
+    };
+    const data = await fetchArticles(query, filterParams, {
+      sources: selectedSources,
+    });
+    setArticles(data);
+    setLoading(false);
+  }, 500); // Debounce delay of 500ms
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    debouncedSearchQuery(searchQuery);
+    // Cleanup function to cancel debounce on component unmount or when searchQuery changes
+    return () => {
+      debouncedSearchQuery.cancel();
+    };
+  }, [searchQuery, filters, selectedSources]);
+
+  const handleSourceChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    value: string
+  ) => {
+    setSelectedSources((prevSources) =>
+      e.target.checked
+        ? [...prevSources, value]
+        : prevSources.filter((source) => source !== value)
+    );
+  };
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="px-5 py-2 flex flex-col gap-2 lg:flex-row">
+      <FilterPanel
+        filters={filters}
+        setFilters={setFilters}
+        sources={sources}
+        selectedSources={selectedSources}
+        onSourceChange={handleSourceChange}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
+      <div className="w-full lg:w-10/12">
+        <NewsList articles={articles} isLoading={loading} />
+      </div>
     </div>
   );
-}
+};
+
+export default Home;

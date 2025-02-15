@@ -1,36 +1,157 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+# Innoscripta Blog
+
+Innoscripta Blog is a Next.js 15 app designed for blog-related content, with features like a responsive design, smooth animations, and state management using Redux Toolkit. The project is containerized using Docker for both development and production environments.
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Docker Setup](#docker-setup)
+- [Project Structure](#project-structure)
+- [Scripts](#scripts)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Docker
+- Yarn
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/innoscripta-blog.git
+   ```
+
+2. Navigate to the project directory:
+   ```bash
+   cd innoscripta-blog
+   ```
+
+3. Install dependencies:
+   ```bash
+   yarn install
+   ```
+
+4. Start the development server:
+   ```bash
+   yarn dev
+   ```
+
+Now, open your browser and go to `http://localhost:3001` to see the application.
+
+## Development Setup
+
+To run the development server locally, use the following command:
 
 ```bash
-npm run dev
-# or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This will start the Next.js app with Turbopack on port 3001.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Docker Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+To run the application using Docker, follow these steps:
 
-## Learn More
+1. Build the Docker image:
+   ```bash
+   docker build -t innoscripta-blog .
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Start the container:
+   ```bash
+   docker-compose up
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This will run the application in a Docker container on port 3001.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Docker Compose
 
-## Deploy on Vercel
+The `docker-compose.yml` file provides a simple configuration for running the app in development mode. It mounts the current directory as a volume and installs dependencies, making it easier to develop within the container.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```yaml
+version: '3.8'
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+services:
+  app:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: ["yarn", "dev"]
+```
+
+### Dockerfile
+
+The Dockerfile is used to build the production image:
+
+```dockerfile
+# Use Node.js as base image
+FROM node:20-alpine AS base
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and yarn.lock
+COPY package.json yarn.lock ./
+
+# Install dependencies
+RUN yarn install --frozen-lockfile
+
+# Copy the entire project
+COPY . .
+
+# Build the Next.js application
+RUN yarn build
+
+# Expose the port Next.js runs on
+EXPOSE 3001
+
+# Start the application
+CMD ["yarn", "start"]
+```
+
+## Project Structure
+
+- `docker-compose.yml`: Configuration for running the app with Docker.
+- `Dockerfile`: Instructions to build the Docker image.
+- `package.json`: The main project dependencies and scripts.
+- `pages/`: The Next.js pages directory.
+- `public/`: Public assets like images and fonts.
+- `styles/`: CSS and Tailwind styles.
+- `components/`: Reusable components for the blog.
+
+## Scripts
+
+Here are the available scripts in the project:
+
+- `dev`: Start the development server with Turbopack.
+  ```bash
+  yarn dev
+  ```
+
+- `build`: Build the Next.js application for production.
+  ```bash
+  yarn build
+  ```
+
+- `start`: Start the application in production mode.
+  ```bash
+  yarn start
+  ```
+
+- `lint`: Run the linting tools on the codebase.
+  ```bash
+  yarn lint
+  ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
